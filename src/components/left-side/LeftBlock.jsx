@@ -1,8 +1,8 @@
 import { useContext, useEffect, useReducer, useState } from "react";
 import "../style/style.css";
 import { ChatContext } from "../providers/ChatProvider";
-import socket from "../../socket";
 import axios from "axios";
+import inputChangeHandler from "../../inputChangeHandler";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -68,26 +68,42 @@ const LeftBlock = (props) => {
   }, []);
 
   const inputChangeValue = (e) => {
+    const checkedRoomName = inputChangeHandler(e.target.value);
+    if (
+      checkedRoomName &&
+      checkedRoomName.length < 49 &&
+      checkedRoomName.length > 0
+    ) {
+      console.log("Название комнаты проверку прошел");
+      setSearchValue(e.target.value);
+    }
     if (!e.target.value.trim() && roomState.searching) {
       getRooms();
     }
-    setSearchValue(e.target.value);
   };
 
   const searchClick = async () => {
-    const { data } = await axios.post(`http://217.151.230.115:5000/rooms/`, {
-      roomName: serachValue,
-    });
-
-    if (data.length) {
-      roomDispatch({
-        type: "SET_SEARCHINGROOM",
-        room: data,
+    const checkedRoomName = inputChangeHandler(serachValue);
+    if (
+      checkedRoomName &&
+      checkedRoomName.length < 49 &&
+      checkedRoomName.length > 0
+    ) {
+      const { data } = await axios.post(`http://217.151.230.115:5000/rooms/`, {
+        roomName: serachValue,
       });
+      if (data.length) {
+        roomDispatch({
+          type: "SET_SEARCHINGROOM",
+          room: data,
+        });
+      } else {
+        roomDispatch({
+          type: "SET_ADDWINDOW",
+        });
+      }
     } else {
-      roomDispatch({
-        type: "SET_ADDWINDOW",
-      });
+      return alert("Неверные данные");
     }
   };
 
@@ -129,7 +145,7 @@ const LeftBlock = (props) => {
   };
 
   const quitUser = () => {
-    window.location();
+    window.location.reload();
   };
 
   return (

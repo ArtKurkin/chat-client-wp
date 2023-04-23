@@ -2,6 +2,8 @@ import axios from "axios";
 import { useContext, useEffect, useReducer, useState, useRef } from "react";
 import { ChatContext } from "../providers/ChatProvider";
 import socket from "../../socket";
+import inputChangeHandler from "../../inputChangeHandler";
+import { getActiveElement } from "@testing-library/user-event/dist/utils";
 
 const MiddleBlock = (props) => {
   const { state, dispatch } = useContext(ChatContext);
@@ -18,19 +20,28 @@ const MiddleBlock = (props) => {
   }, [state.messages]);
 
   const sendMessage = async () => {
-    socket.emit("NEW_MESSAGES", {
-      userId: state.userId,
-      roomName: state.roomName,
-      content: message,
-    });
+    const checkedMessage = inputChangeHandler(message);
+    if (
+      checkedMessage &&
+      checkedMessage.length < 254 &&
+      checkedMessage.length > 0
+    ) {
+      socket.emit("NEW_MESSAGES", {
+        userId: state.userId,
+        roomName: state.roomName,
+        content: message,
+      });
 
-    setSelect(false);
-    dispatch({
-      type: "SELECT_MESSAGE",
-      message: null,
-    });
+      setSelect(false);
+      dispatch({
+        type: "SELECT_MESSAGE",
+        message: null,
+      });
 
-    setMessage("");
+      setMessage("");
+    } else {
+      alert("Неверные данные");
+    }
   };
 
   const editMessage = () => {

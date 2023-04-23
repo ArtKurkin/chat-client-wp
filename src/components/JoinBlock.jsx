@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import socket from "../socket";
 import axios from "axios";
 import { ChatContext } from "./providers/ChatProvider";
+import inputChangeHandler from "../inputChangeHandler";
 
 const JoinBlock = ({ onLogin }) => {
   const { state, dispatch } = useContext(ChatContext);
@@ -9,15 +10,22 @@ const JoinBlock = ({ onLogin }) => {
   const [isLoading, setLoading] = useState(false);
 
   const onEnter = async () => {
-    if (!userName) return alert("Неверные данные");
-    const obj = {
-      userName,
-    };
+    const checkedUserName = inputChangeHandler(userName);
+    if (
+      checkedUserName &&
+      checkedUserName.length < 49 &&
+      checkedUserName.length > 0
+    ) {
+      const obj = {
+        userName,
+      };
+      socket.emit("JOIN", obj);
+    } else {
+      return alert("Неверные данные");
+    }
 
     console.log("Клик есть");
     console.log(userName);
-
-    socket.emit("JOIN", obj);
   };
 
   return (
